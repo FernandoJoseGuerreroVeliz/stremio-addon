@@ -2,11 +2,19 @@ const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
 
 const builder = new addonBuilder({
   id: "com.fernando.stremioaddon",
-  version: "1.0.0",
+  version: "1.1.0",
   name: "Mi Stremio Addon",
-  description: "Mi primer addon de Stremio",
-  resources: ["catalog"],
-  types: ["movie"],
+  description: "Addon de prueba con catálogo y reproducción directa",
+
+  resources: [
+    "catalog",
+    "stream"
+  ],
+
+  types: [
+    "movie"
+  ],
+
   catalogs: [
     {
       type: "movie",
@@ -14,8 +22,15 @@ const builder = new addonBuilder({
       name: "Mis Películas"
     }
   ],
-  idPrefixes: ["tt"]
+
+  idPrefixes: [
+    "tt"
+  ]
 });
+
+// ================================
+// CATÁLOGO
+// ================================
 
 builder.defineCatalogHandler(async () => {
   return {
@@ -24,11 +39,50 @@ builder.defineCatalogHandler(async () => {
         id: "tt1254207",
         type: "movie",
         name: "Big Buck Bunny",
-        poster: "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg"
+        poster:
+          "https://peach.blender.org/wp-content/uploads/title_anouncement.jpg"
       }
     ]
   };
 });
+
+// ================================
+// STREAMS
+// ================================
+
+builder.defineStreamHandler(async (args) => {
+
+  console.log("Solicitud de stream:", args);
+
+  // Big Buck Bunny
+  if (
+    args.type === "movie" &&
+    args.id === "tt1254207"
+  ) {
+
+    return {
+      streams: [
+        {
+          name: "Big Buck Bunny - MP4",
+          description: "Video de prueba",
+          url: "https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_480p_h264.mov",
+          behaviorHints: {
+            filename: "big_buck_bunny_480p_h264.mov"
+          }
+        }
+      ]
+    };
+  }
+
+  // Si no conocemos el ID
+  return {
+    streams: []
+  };
+});
+
+// ================================
+// SERVIDOR
+// ================================
 
 serveHTTP(builder.getInterface(), {
   port: process.env.PORT || 7000
